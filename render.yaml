@@ -1,0 +1,50 @@
+# ============================================================================
+#  render.yaml — a Render "Blueprint" that creates BOTH the web service and the
+#  Postgres database, and AUTO-CONNECTS the database URL for you.
+# ----------------------------------------------------------------------------
+#  Why this exists: the #1 cause of a deployed app showing "Not Found" is that
+#  DATABASE_URL isn't set, so the server can't reach a database. This file wires
+#  it automatically — you never copy/paste the URL.
+#
+#  HOW TO USE IT (one time):
+#    1. Commit + push this file to GitHub.
+#    2. In Render: New → Blueprint → pick this repo → Apply.
+#    3. Render creates the database + web service and sets the env vars below.
+#    4. Load the tables ONCE (see "Load the schema" at the bottom of this file).
+# ============================================================================
+
+databases:
+  # A free Postgres instance. Render generates its connection string, which we
+  # reference from the web service below via "fromDatabase".
+  - name: htweet-db
+    plan: free
+
+services:
+  - type: web
+    name: htweet
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      # THIS is the important line: it sets DATABASE_URL to the database's own
+      # connection string automatically. No copy/paste, no mismatch.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: htweet-db
+          property: connectionString
+      # A long random secret for signing login cookies — Render generates it.
+      - key: SESSION_SECRET
+        generateValue: true
+      # Enables secure cookies + "trust proxy" in server.js.
+      - key: NODE_ENV
+        value: production
+
+# ----------------------------------------------------------------------------
+#  Load the schema ONCE after the first deploy (the database starts empty):
+#
+#    psql "<EXTERNAL_DATABASE_URL_FROM_RENDER>" -f schema.sql
+#
+#  (Copy the database's *External* Connection URL from its Render page. The app
+#  itself uses the *Internal* URL, which is what DATABASE_URL above resolves to.)
+# ----------------------------------------------------------------------------
