@@ -1,0 +1,8 @@
+# Installed packages — re-created by "npm install", so never commit them.
+node_modules/
+
+# Real secrets live here. Never commit. (We DO commit .env.example as a template.)
+.env
+
+# OS / editor noise
+.DS_Store

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HtweetH</title>
+    <!-- Apply the saved light/dark theme BEFORE the page paints, so dark-mode
+         users don't see a quick flash of the light theme on every load. -->
+    <script>
+      try {
+        var savedTheme = localStorage.getItem("htweet-theme");
+        if (savedTheme) {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+      } catch (e) {}
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- React renders our whole app INTO this one empty div. -->
+    <div id="root"></div>
+
+    <!-- ====================================================================
+         React via CDN — no build step / no bundler.
+         1) react          = the framework (components, state)
+         2) react-dom      = renders components into the page
+         3) babel standalone = compiles JSX (the HTML-in-JS syntax) right in
+            the browser, so we can write modern React with zero tooling.
+
+         This setup is PERFECT for learning. In a real production app you'd use
+         a build tool like Vite instead of Babel-in-the-browser (it's faster).
+         We use the "development" builds because they print helpful warnings.
+    ==================================================================== -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- type="text/babel" tells Babel to compile this file before running it. -->
+    <script type="text/babel" src="app.js"></script>
+  </body>
+</html>

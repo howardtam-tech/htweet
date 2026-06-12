@@ -1,0 +1,594 @@
+/* ============================================================================
+   style.css — hand-written, no framework.
+   Kept simple and readable: a few variables up top, then top-to-bottom by
+   section (layout, compose box, tweets, auth forms, buttons).
+   ============================================================================ */
+
+/* CSS variables = named values we reuse, so changing the theme is one edit.
+   These are the LIGHT theme values (the default). */
+:root {
+  --blue: #1d9bf0;
+  --blue-dark: #1a8cd8;
+  --red: #f91880;
+  --bg: #f7f9f9;
+  --card: #ffffff;
+  --border: #e1e8ed;
+  --text: #0f1419;
+  --muted: #536471;
+  /* A translucent panel used behind content when a background image is set. */
+  --panel: rgba(255, 255, 255, 0.82);
+  /* The soft glow behind the login card. */
+  --auth-glow: #e8f5fe;
+}
+
+/* DARK theme: the same variable names with dark values. They switch on when
+   <html> has data-theme="dark" (set by the theme toggle in app.js). Because
+   everything below uses these variables, the whole app re-themes in one place. */
+:root[data-theme="dark"] {
+  --bg: #15202b;
+  --card: #1e2732;
+  --border: #38444d;
+  --text: #e7e9ea;
+  --muted: #8b98a5;
+  --panel: rgba(21, 32, 43, 0.82);
+  --auth-glow: #1c3a4d;
+}
+
+/* A simple reset so spacing is predictable across browsers. */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.4;
+  /* Ease the color change when switching light/dark. */
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* When the user sets a background image, cover the whole page with it. */
+body.has-bg {
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+/* So content stays readable on top of any photo, the centered column gets a
+   translucent, slightly blurred panel behind it. */
+body.has-bg .app {
+  background: var(--panel);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border-radius: 16px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+/* The whole app lives in a narrow, centered column — like a phone-width feed. */
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* --- Header ---------------------------------------------------------------- */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.header h1 {
+  font-size: 24px;
+  color: var(--blue);
+  cursor: pointer; /* clicking the title returns to the feed */
+}
+
+.header .who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* The light/dark switch — a round, outlined icon button. */
+.theme-toggle {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: var(--card);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+.theme-toggle:hover {
+  background: var(--bg);
+}
+.theme-toggle:active {
+  transform: scale(0.92);
+}
+/* On the login page the toggle floats in the top-right corner. */
+.auth-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.header .who a {
+  color: var(--blue);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* --- Cards (compose box, tweets, forms all share this look) ---------------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* --- Compose box ----------------------------------------------------------- */
+.compose textarea {
+  width: 100%;
+  border: none;
+  resize: none;
+  font-size: 18px;
+  font-family: inherit;
+  outline: none;
+  min-height: 60px;
+  /* Match the card/theme instead of the browser's default white field, so the
+     box turns dark along with everything else in dark mode. */
+  background: var(--card);
+  color: var(--text);
+}
+
+/* Placeholder text ("What's happening?", etc.) follows the muted theme color. */
+.compose textarea::placeholder,
+.auth input::placeholder,
+.text-input::placeholder,
+.bio-input::placeholder {
+  color: var(--muted);
+}
+
+.compose .compose-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+/* The live character counter. Turns red when over the limit. */
+.char-count {
+  font-size: 14px;
+  color: var(--muted);
+}
+.char-count.over {
+  color: var(--red);
+  font-weight: bold;
+}
+
+/* --- Avatars (profile photos) --------------------------------------------- */
+/* A round photo, or a colored circle with the user's first letter as fallback. */
+.avatar {
+  flex: none; /* never shrink in a flex row */
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  overflow: hidden; /* clip the <img> into the circle */
+  user-select: none;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* fill the circle without distortion */
+  display: block;
+}
+.avatar.clickable {
+  cursor: pointer;
+}
+
+/* --- Tweets ---------------------------------------------------------------- */
+/* A tweet is now a row: the avatar on the left, the text/actions on the right. */
+.tweet {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.tweet .tweet-body {
+  flex: 1;
+  min-width: 0; /* let long content wrap instead of overflowing the row */
+}
+
+.tweet .tweet-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.tweet .username {
+  font-weight: bold;
+  cursor: pointer; /* click a name to open that profile */
+}
+.tweet .username:hover {
+  text-decoration: underline;
+}
+
+.tweet .time {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.tweet .content {
+  font-size: 16px;
+  white-space: pre-wrap; /* keep the user's line breaks */
+  word-wrap: break-word; /* don't let long words overflow the card */
+  margin-bottom: 10px;
+}
+
+.tweet .tweet-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* The like button: a heart + a count. We swap a CSS class to show liked state. */
+.like-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+}
+.like-btn.liked {
+  color: var(--red);
+}
+.like-btn:hover {
+  color: var(--red);
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--muted);
+  padding: 4px;
+}
+.delete-btn:hover {
+  color: var(--red);
+}
+
+/* --- Buttons --------------------------------------------------------------- */
+.btn {
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 9999px; /* fully rounded "pill" button */
+  padding: 8px 20px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn:hover {
+  background: var(--blue-dark);
+}
+/* Disabled buttons (e.g. empty tweet) look and behave inert. */
+.btn:disabled {
+  background: var(--blue);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- The logged-out login / sign-up page ---------------------------------- */
+/* A full-height, gently tinted backdrop that centers the login card both
+   vertically and horizontally. */
+.auth-screen {
+  position: relative; /* anchors the floating theme toggle */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(
+    1200px 600px at 50% -10%,
+    var(--auth-glow) 0%,
+    var(--bg) 60%
+  );
+}
+
+/* The centered column holding the brand + the card. */
+.auth-screen-inner {
+  width: 100%;
+  max-width: 380px;
+}
+
+/* The "HtweetH" wordmark + tagline above the card. */
+.brand {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.brand h1 {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--blue);
+  letter-spacing: -0.5px;
+}
+.brand .tagline {
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* A simple centered wrapper for the "Loading…" state. */
+.loading-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Auth (login / signup) card ------------------------------------------- */
+/* The card slides up and fades in when it appears (and when switching modes). */
+.auth {
+  animation: card-rise 0.35s ease both;
+}
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth h2 {
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 22px;
+}
+
+.auth input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--text);
+  /* Smoothly highlight the field when it gains focus. */
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.auth input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.15);
+}
+
+/* The submit button fills the card width on the login page. */
+.auth .btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  margin-top: 4px;
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+.auth .btn:active {
+  transform: scale(0.99);
+}
+
+.auth .switch {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+.auth .switch a {
+  color: var(--blue);
+  cursor: pointer;
+  font-weight: 600;
+}
+.auth .switch a:hover {
+  text-decoration: underline;
+}
+
+/* Error messages shown to the user (bad login, validation, etc.). */
+.error {
+  color: var(--red);
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+/* Small helper text, e.g. the "demo mode" banner. */
+.banner {
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  color: #795548;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px 0;
+}
+
+/* --- Header user (avatar + links) ----------------------------------------- */
+.header .who-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- Profile header (big avatar + name + bio + Edit button) ---------------- */
+.profile-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.profile-header .profile-meta {
+  flex: 1;
+  min-width: 0;
+}
+.profile-header h2 {
+  margin-bottom: 4px;
+}
+.profile-bio {
+  font-size: 15px;
+  margin: 4px 0 6px;
+  white-space: pre-wrap; /* keep the user's line breaks */
+  word-wrap: break-word;
+}
+
+/* --- Edit profile form ----------------------------------------------------- */
+.edit-profile h2 {
+  margin-bottom: 12px;
+}
+
+.edit-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.edit-avatar-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* A label styled like a button so the hidden file <input> looks clickable. */
+.file-btn {
+  display: inline-block;
+  cursor: pointer;
+}
+.remove-link {
+  font-size: 13px;
+  color: var(--red);
+  cursor: pointer;
+}
+
+/* Shared look for the text/url/bio fields on the edit page. */
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--muted);
+  margin: 8px 0 4px;
+}
+.text-input,
+.bio-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--text);
+}
+.text-input:disabled {
+  background: var(--bg);
+  color: var(--muted);
+}
+.bio-input {
+  resize: vertical;
+  min-height: 70px;
+}
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.edit-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+.edit-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* A secondary, outlined button (used for Cancel + unselected theme choice). */
+.btn.ghost {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--border);
+}
+.btn.ghost:hover {
+  background: var(--bg);
+}
+
+/* --- Appearance panel (theme + background image) -------------------------- */
+.appearance h2 {
+  margin-bottom: 12px;
+}
+
+/* The two Light / Dark buttons sit side by side. The selected one is solid
+   blue (.btn), the other is outlined (.btn.ghost). */
+.theme-choice {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* A preview of the chosen background image (or an empty placeholder). */
+.bg-preview {
+  height: 130px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background-color: var(--bg);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+/* The "Choose image" button + "Remove background" link, in a row. */
+.bg-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 4px;
+}

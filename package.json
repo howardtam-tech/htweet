@@ -1,0 +1,21 @@
+{
+  "name": "htweeth",
+  "version": "1.0.0",
+  "description": "A minimal Twitter clone for a class project. Express + Postgres backend, React-via-CDN frontend.",
+  "//": "main is the entry file; scripts.start is what Render (and you) run to boot the server.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "//": "Tells Render which Node version to use. 18+ has built-in fetch and is widely available.",
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-pg-simple": "^9.0.1",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "pg": "^8.11.5"
+  }
+}
